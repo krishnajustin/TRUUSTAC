@@ -159,6 +159,101 @@
       height: 2px;
       background: var(--blue);
       border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* ─── MOBILE MENU ─── */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 72px;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      z-index: 98;
+      padding: 1.2rem 5%;
+      border-bottom: 1px solid rgba(30, 58, 138, 0.1);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      flex-direction: column;
+      gap: 0.5rem;
+      animation: slideDown 0.25s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .mobile-menu.open {
+      display: flex;
+    }
+
+    .mobile-menu ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      width: 100%;
+    }
+
+    .mobile-menu ul li a {
+      display: block;
+      padding: 0.75rem 1rem;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      border-radius: 12px;
+      transition: background 0.2s, color 0.2s;
+      letter-spacing: 0.05em;
+    }
+
+    .mobile-menu ul li a:hover {
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    .mobile-menu-cta {
+      display: block;
+      background: var(--orange);
+      color: white !important;
+      text-align: center;
+      border-radius: 50px !important;
+      padding: 0.85rem 1rem !important;
+      font-weight: 700 !important;
+      margin-top: 0.5rem;
+    }
+
+    .mobile-menu-cta:hover {
+      background: #ea580c;
+      color: white !important;
+    }
+
+    .mobile-menu-lang {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      margin-top: 0.25rem;
+    }
+
+    .mobile-menu-lang span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
     }
 
     /* ─── HERO ─── */
@@ -1115,6 +1210,22 @@
     </div>
   </nav>
 
+  <!-- ──────────── MOBILE MENU ──────────── -->
+  <div id="mobile-menu" class="mobile-menu">
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#why">Why Us</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="tel:+919490713349" class="mobile-menu-cta">📞 Call Now</a></li>
+      <li class="mobile-menu-lang">
+        <span>Language:</span>
+        <button onclick="switchLang()" id="mobile-lang-btn" class="lang-btn">🌐 Telugu</button>
+      </li>
+    </ul>
+  </div>
+
   <!-- ──────────── HERO ──────────── -->
   <section id="home" class="hero">
     <div class="hero-inner">
@@ -1456,6 +1567,7 @@
         return false;
       }
     };
+
     // Scroll reveal
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
@@ -1486,13 +1598,41 @@
       document.querySelector('nav').style.boxShadow =
         window.scrollY > 20 ? '0 4px 20px rgba(30,58,138,0.12)' : 'none';
     });
+
+    // ─── HAMBURGER / MOBILE MENU ───
+    const hamburger = document.querySelector('.hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      mobileMenu.classList.toggle('open');
+    });
+
+    // Close mobile menu when any link inside it is clicked
+    mobileMenu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        mobileMenu.classList.remove('open');
+      });
+    });
+
+    // Close mobile menu on outside click
+    document.addEventListener('click', (e) => {
+      if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+        hamburger.classList.remove('active');
+        mobileMenu.classList.remove('open');
+      }
+    });
   </script>
 
   <div id="google_translate_element" style="display:none;"></div>
   <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,te' }, 'google_translate_element');
+      // After widget loads, check if we should auto-switch to Telugu
+      setTimeout(checkAutoLanguage, 800);
     }
+
     function changeLanguage(langCode) {
       var selectField = document.querySelector(".goog-te-combo");
       if (selectField) {
@@ -1500,6 +1640,21 @@
         selectField.dispatchEvent(new Event('change'));
       }
     }
+
+    function setButtonsToEnglish() {
+      var btn = document.getElementById('lang-btn');
+      var mobileBtn = document.getElementById('mobile-lang-btn');
+      if (btn) btn.innerText = '🌐 English';
+      if (mobileBtn) mobileBtn.innerText = '🌐 English';
+    }
+
+    function setButtonsToTelugu() {
+      var btn = document.getElementById('lang-btn');
+      var mobileBtn = document.getElementById('mobile-lang-btn');
+      if (btn) btn.innerText = '🌐 Telugu';
+      if (mobileBtn) mobileBtn.innerText = '🌐 Telugu';
+    }
+
     function switchLang() {
       var btn = document.getElementById('lang-btn');
       var mobileBtn = document.getElementById('mobile-lang-btn');
@@ -1511,17 +1666,46 @@
 
       if (btn && (btn.innerText.includes('Telugu') || btn.innerText.includes('తెలుగు'))) {
         changeLanguage('te');
-        btn.innerText = '🌐 English';
-        if (mobileBtn) mobileBtn.innerText = '🌐 English';
+        localStorage.setItem('langPref', 'te');
+        setButtonsToEnglish();
       } else {
+        localStorage.setItem('langPref', 'en');
         document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + location.hostname + ";";
-
         if (window.location.hash.includes('googtrans')) {
           window.history.replaceState(null, null, window.location.pathname + window.location.search);
         }
         window.location.reload();
       }
+    }
+
+    function checkAutoLanguage() {
+      // If user has already chosen a preference, respect it
+      var saved = localStorage.getItem('langPref');
+      if (saved === 'te') { changeLanguage('te'); setButtonsToEnglish(); return; }
+      if (saved === 'en') return;
+
+      // Check browser/system language for Telugu
+      var lang = navigator.language || navigator.userLanguage || '';
+      if (lang.startsWith('te')) {
+        changeLanguage('te');
+        localStorage.setItem('langPref', 'te');
+        setButtonsToEnglish();
+        return;
+      }
+
+      // IP-based detection: auto-switch for users in Andhra Pradesh or Telangana
+      fetch('https://ipapi.co/json/')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.country_code === 'IN' &&
+              (data.region_code === 'AP' || data.region_code === 'TS')) {
+            changeLanguage('te');
+            localStorage.setItem('langPref', 'te');
+            setButtonsToEnglish();
+          }
+        })
+        .catch(function() {});
     }
   </script>
   <script type="text/javascript"
